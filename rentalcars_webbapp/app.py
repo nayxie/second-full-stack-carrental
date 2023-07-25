@@ -25,4 +25,21 @@ def getCursor():
 
 @app.route("/")
 def home():
-    return "Hello, Flask!"
+    return render_template("home.html")
+
+@app.route("/login")
+def logIn():
+    return render_template("logIn.html")
+
+@app.route("/checkid", methods=["POST"])
+def checkID():
+    username = request.form.get("username")
+    password = request.form.get("password")
+    return f"hello {username} pw {password} check ID in progress"
+# route and function here to deal with log in information
+# fetch username and password 
+# if usermname doesn't exist, or username and pw don't match, display msg
+# if correct, display a message "welcome {firstname lastname}! role: {role}"
+# display links accordingly 
+
+
