@@ -1,0 +1,26 @@
+{% extends "home.html" %}
+{% block content %}
+<!-- comment here -->
+
+<h2>Sign Up</h2>
+
+<form action="/register" method="post">
+    <label for="username">Username:</label>
+    <input type="text" name="username" required><br>
+    <label for="password">Password:</label>
+    <input type="text" name="password" required><br>
+    <label for="userrole"> User role:</label>
+    <select name="userrole" required>
+        <option value="customer" selected>Customer</option>
+        <option value="staff">Staff</option>
+        <option value="admin">Admin</option>
+    </select><br>
+    <label for="email">Email:</label>
+    <input type="text" name="email" required><br>
+
+    <input type="submit" value="Submit">
+</form>
+
+
+
+{% endblock %}
