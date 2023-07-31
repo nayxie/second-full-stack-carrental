@@ -12,16 +12,16 @@
             <h1>Admin Page</h1>
             <h2>Welcome {{session['username']}}</h2>
             <ul>
-                <li><a href="{{ url_for('') }}">Add Customers</a></li>
-                <li><a href="{{ url_for('') }}">Update Customers' Profiles</a></li>
-                <li><a href="{{ url_for('') }}">Delate Customers</a></li><br><br>
-                <li><a href="{{ url_for('') }}">Add Staff</a></li>
-                <li><a href="{{ url_for('') }}">Update Staff's Profiles</a></li>
-                <li><a href="{{ url_for('') }}">Delete Staff</a></li><br><br>
-                <li><a href="{{ url_for('') }}">View Rental Cars</a></li>
-                <li><a href="{{ url_for('') }}">Add Rental Cars</a></li>
-                <li><a href="{{ url_for('') }}">Update Rental Cars' Information</a></li>
-                <li><a href="{{ url_for('') }}">Delete Rental Cars</a></li>
+                <li><a href="{{ url_for('userForm') }}">Add Customers</a></li>
+                <li><a href="{{ url_for('customerList') }}">Update Customers' Profiles</a></li>
+                <li><a href="{{ url_for('customerList2') }}">Delete Customers</a></li><br><br>
+                <li><a href="{{ url_for('userForm') }}">Add Staff</a></li>
+                <li><a href="{{ url_for('home') }}">Update Staff's Profiles</a></li>
+                <li><a href="{{ url_for('home') }}">Delete Staff</a></li><br><br>
+                <li><a href="{{ url_for('home') }}">View Rental Cars</a></li>
+                <li><a href="{{ url_for('home') }}">Add Rental Cars</a></li>
+                <li><a href="{{ url_for('home') }}">Update Rental Cars' Information</a></li>
+                <li><a href="{{ url_for('home') }}">Delete Rental Cars</a></li>
             </ul>
       </nav>
       <section class="content">
