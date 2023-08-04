@@ -194,12 +194,13 @@ def customerPage():
 
 # access control need to be implemented from this point 
 
-@app.route("/userform")
-def userForm():
-    return render_template("userForm.html")
 
-@app.route("/addcustomers", methods=['GET', 'POST'])
-def addCustomers():
+@app.route("/userform/<userrole>")
+def userForm(userrole):
+    return render_template("userForm.html", userrole=userrole)
+
+@app.route("/addusers/<userrole>", methods=['GET', 'POST'])
+def addUsers(userrole):
     msg = ""
     if (request.method == 'POST' 
         and request.form.get('username') 
@@ -239,35 +240,35 @@ def addCustomers():
         # elif not username or not password or not userRole or not email:
         #     msg = 'Please fill out the form.'
         else:
-            userrole = "customer"
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
             hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             # print(hashed)
             cursor.execute('INSERT INTO users (Username, UserPassword, UserRole, FirstName, LastName, Address, Email, Phone) \
                             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (username, hashed, userrole, firstname, lastname, address, email, phone,))
             mysql.connection.commit()
-            msg = 'You have successfully added a customer!'
+            msg = f'You have successfully added a {userrole}!'
     elif request.method == 'POST':
         # Form is empty (no POST data)
         msg = 'Please fill out the form.'
     return msg
 
-@app.route("/customerlist")
-def customerList():
+
+@app.route("/customerlist/<access>")
+def customerList(access):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM users WHERE UserRole = "customer"')
     account = cursor.fetchall()
-    return render_template("customerList.html", account=account)
+    return render_template("customerList.html", account=account, access=access)
 
 @app.route("/customerinfo/<username>")
 def customerInfo(username):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM users WHERE Username = %s', (username,))
     account = cursor.fetchone()
-    return render_template("displayInfo.html", account=account)
+    return render_template("customerInfo.html", account=account)
 
-@app.route("/updateinfo", methods=['GET', 'POST'])
-def updateInfo():
+@app.route("/updatecustomer", methods=['GET', 'POST'])
+def updateCustomer():
     msg = ""
     if (request.method == 'POST' 
         and request.form.get('username') 
@@ -309,15 +310,9 @@ def updateInfo():
         msg = 'Please fill out the form.'
     return msg
 
-@app.route("/customerlist2")
-def customerList2():
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute('SELECT * FROM users WHERE UserRole = "customer"')
-    account = cursor.fetchall()
-    return render_template("customerList2.html", account=account)
-
-@app.route("/deletecustomers/<username>")
-def deleteCustomers(username):
+@app.route("/deletecustomer", methods=['GET', 'POST'])
+def deleteCustomers():
+    username = request.form['username']
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('DELETE FROM users WHERE Username = %s', (username,))
     mysql.connection.commit()
@@ -330,6 +325,235 @@ def deleteCustomers(username):
 
 
 
+
+
+@app.route("/stafflist")
+def staffList():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM users WHERE UserRole = "staff"')
+    account = cursor.fetchall()
+    return render_template("staffList.html", account=account)
+
+@app.route("/staffinfo/<username>")
+def staffInfo(username):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM users WHERE Username = %s', (username,))
+    account = cursor.fetchone()
+    return render_template("staffInfo.html", account=account)
+
+@app.route("/updatestaff", methods=['GET', 'POST'])
+def updateStaff():
+    msg = ""
+    if (request.method == 'POST' 
+        and request.form.get('username') 
+        # and request.form.get('password') 
+        and request.form.get('firstname') 
+        and request.form.get('lastname') 
+        and request.form.get('address') 
+        and request.form.get('email')
+        and request.form.get('phone')):
+
+        username = request.form['username']
+        # password = request.form['password']
+        firstname = request.form['firstname']
+        lastname = request.form['lastname']
+        address = request.form['address']
+        email = request.form['email']
+        phone = request.form['phone']
+    
+        if not re.match(r'^[A-Za-z\s]+$', firstname):
+            msg = 'Invalid first name.'
+        elif not re.match(r'^[A-Za-z\s]+$', lastname):
+            msg = 'Invalid last name.'
+        elif not re.match(r'^[A-Za-z0-9\s\-,.#]+$', address):
+            msg = 'Invalid address.'
+        elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
+            msg = 'Invalid email address.'
+        elif not re.match(r'^[\d\s+\-().]+$', phone):
+            msg = 'Invalid phone number.'
+        # elif not username or not password or not userRole or not email:
+        #     msg = 'Please fill out the form.'
+        else:
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute('UPDATE users SET FirstName = %s, LastName= %s, Address= %s, Email= %s, Phone= %s WHERE Username = %s;',
+                            (firstname, lastname, address, email, phone, username))
+            mysql.connection.commit()
+            msg = 'You have successfully updated a staff!'
+    elif request.method == 'POST':
+        # Form is empty (no POST data)
+        msg = 'Please fill out the form.'
+    return msg
+
+@app.route("/deletestaff", methods=['GET', 'POST'])
+def deleteStaff():
+    username = request.form['username']
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('DELETE FROM users WHERE Username = %s', (username,))
+    mysql.connection.commit()
+    msg = 'You have successfully deleted a staff!'
+    return msg
+
+
+
+@app.route("/carlist")
+def carList():
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM rental_cars')
+    account = cursor.fetchall()
+    return render_template("carList.html", account=account)
+
+@app.route("/carform")
+def carForm():
+    return render_template("carForm.html")
+
+@app.route("/addcars", methods=['GET', 'POST'])
+def addCars():
+    return "added"
+
+
+@app.route("/carinfo/<carid>")
+def carInfo(carid):
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM rental_cars WHERE CarID = %s;', (carid,))
+    account = cursor.fetchone()
+    return account
+
+
+
+
+# @app.route("/userform2")
+# def userForm2():
+#     return render_template("userForm2.html")
+
+# @app.route("/addstaff", methods=['GET', 'POST'])
+# def addStaff():
+#     msg = ""
+#     if (request.method == 'POST' 
+#         and request.form.get('username') 
+#         and request.form.get('password') 
+#         and request.form.get('firstname') 
+#         and request.form.get('lastname') 
+#         and request.form.get('address') 
+#         and request.form.get('email')
+#         and request.form.get('phone')):
+#         username = request.form['username']
+#         password = request.form['password']
+#         firstname = request.form['firstname']
+#         lastname = request.form['lastname']
+#         address = request.form['address']
+#         email = request.form['email']
+#         phone = request.form['phone']
+        
+#         # Check if account exists using MySQL
+#         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#         cursor.execute('SELECT * FROM users WHERE Username = %s', (username,))
+#         account = cursor.fetchone()
+#         # If account exists show error and validation checks
+#         if account:
+#             msg = 'Account already exists.'
+#         elif not re.match(r'[A-Za-z0-9]+', username):
+#             msg = 'Username must contain only characters and numbers.'
+#         elif not re.match(r'^[A-Za-z\s]+$', firstname):
+#             msg = 'Invalid first name.'
+#         elif not re.match(r'^[A-Za-z\s]+$', lastname):
+#             msg = 'Invalid last name.'
+#         elif not re.match(r'^[A-Za-z0-9\s\-,.#]+$', address):
+#             msg = 'Invalid address.'
+#         elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
+#             msg = 'Invalid email address.'
+#         elif not re.match(r'^[\d\s+\-().]+$', phone):
+#             msg = 'Invalid phone number.'
+#         # elif not username or not password or not userRole or not email:
+#         #     msg = 'Please fill out the form.'
+#         else:
+#             userrole = "staff"
+#             # Account doesnt exists and the form data is valid, now insert new account into accounts table
+#             hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+#             # print(hashed)
+#             cursor.execute('INSERT INTO users (Username, UserPassword, UserRole, FirstName, LastName, Address, Email, Phone) \
+#                             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (username, hashed, userrole, firstname, lastname, address, email, phone,))
+#             mysql.connection.commit()
+#             msg = 'You have successfully added a staff!'
+#     elif request.method == 'POST':
+#         # Form is empty (no POST data)
+#         msg = 'Please fill out the form.'
+#     return msg
+
+# @app.route("/stafflist")
+# def staffList():
+#     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#     cursor.execute('SELECT * FROM users WHERE UserRole = "staff"')
+#     account = cursor.fetchall()
+#     return render_template("staffList.html", account=account)
+
+
+
+
+
+# @app.route("/staffinfo/<username>")
+# def staffInfo(username):
+#     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#     cursor.execute('SELECT * FROM users WHERE Username = %s', (username,))
+#     account = cursor.fetchone()
+#     return render_template("displayStaffInfo.html", account=account)
+
+# @app.route("/updatestaffinfo", methods=['GET', 'POST'])
+# def updateStaffInfo():
+#     msg = ""
+#     if (request.method == 'POST' 
+#         and request.form.get('username') 
+#         # and request.form.get('password') 
+#         and request.form.get('firstname') 
+#         and request.form.get('lastname') 
+#         and request.form.get('address') 
+#         and request.form.get('email')
+#         and request.form.get('phone')):
+
+#         username = request.form['username']
+#         # password = request.form['password']
+#         firstname = request.form['firstname']
+#         lastname = request.form['lastname']
+#         address = request.form['address']
+#         email = request.form['email']
+#         phone = request.form['phone']
+    
+#         if not re.match(r'^[A-Za-z\s]+$', firstname):
+#             msg = 'Invalid first name.'
+#         elif not re.match(r'^[A-Za-z\s]+$', lastname):
+#             msg = 'Invalid last name.'
+#         elif not re.match(r'^[A-Za-z0-9\s\-,.#]+$', address):
+#             msg = 'Invalid address.'
+#         elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
+#             msg = 'Invalid email address.'
+#         elif not re.match(r'^[\d\s+\-().]+$', phone):
+#             msg = 'Invalid phone number.'
+#         # elif not username or not password or not userRole or not email:
+#         #     msg = 'Please fill out the form.'
+#         else:
+#             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#             cursor.execute('UPDATE users SET FirstName = %s, LastName= %s, Address= %s, Email= %s, Phone= %s WHERE Username = %s;',
+#                             (firstname, lastname, address, email, phone, username))
+#             mysql.connection.commit()
+#             msg = 'You have successfully updated a staff!'
+#     elif request.method == 'POST':
+#         # Form is empty (no POST data)
+#         msg = 'Please fill out the form.'
+#     return msg
+
+# @app.route("/stafflist2")
+# def staffList2():
+#     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#     cursor.execute('SELECT * FROM users WHERE UserRole = "staff"')
+#     account = cursor.fetchall()
+#     return render_template("staffList2.html", account=account)
+
+# @app.route("/deletestaff/<username>")
+# def deleteStaff(username):
+#     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+#     cursor.execute('DELETE FROM users WHERE Username = %s', (username,))
+#     mysql.connection.commit()
+#     msg = 'You have successfully deleted a staff!'
+#     return msg
 
 
 
