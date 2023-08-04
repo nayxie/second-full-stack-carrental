@@ -13,7 +13,7 @@
             <h2>Welcome {{session['username']}}</h2>
             <ul>
                 <li><a href="{{ url_for('home') }}">Update Profile and Password</a></li><br><br>
-                <li><a href="{{ url_for('home') }}">View Customers' Profiles</a></li><br><br>
+                <li><a href="/customerlist/{{'staffaccess'}}">View Customers' Profiles</a></li><br><br>
                 <li><a href="{{ url_for('home') }}">Add Rental Cars</a></li>
                 <li><a href="{{ url_for('home') }}">Update Rental Cars' Information</a></li>
                 <li><a href="{{ url_for('home') }}">Delete Rental Cars</a></li>
