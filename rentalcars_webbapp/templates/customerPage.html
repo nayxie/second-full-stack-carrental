@@ -12,8 +12,10 @@
             <h1>Customer Page</h1>
             <h2>Welcome {{session['username']}}</h2>
             <ul>
-                <li><a href="{{ url_for('home') }}">Update Profile and Password</a></li><br><br>
-                <li><a href="{{ url_for('home') }}">View Rental Cars</a></li>
+                <li><a href="{{ url_for('displayProfile') }}">View and Update Profile</a></li>
+                <li><a href="{{ url_for('home') }}">Reset Password</a></li><br><br>
+              
+                <li><a href="/carlist/{{'customeraccess'}}">View Rental Cars</a></li>
             </ul>
       </nav>
       <section class="content">
