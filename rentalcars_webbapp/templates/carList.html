@@ -11,10 +11,19 @@
       <nav>
             <h1>Car List</h1><br>
           
+            {% if access == "adminaccess" or access == "staffaccess" %}
             <a href="/carform">Add A Car</a><br><br>
+            {% endif %}
+            
 
             <table>
-                <tr><th>Photo</th><th>Registration Number</th><th>Model</th><th>Production Year</th><th>Seating</th><th>Rental Per Day</th><th>Actions</th></tr>
+                <tr>
+                  <th>Photo</th><th>Registration Number</th><th>Model</th><th>Production Year</th><th>Seating</th><th>Rental Per Day</th>
+                  {% if access == "adminaccess" or access == "staffaccess" %}
+                  <th>Actions</th>
+                  {% endif %}
+                
+                </tr>
                 {% for car in account %}
                     <tr>
                         <td>{{car['CarImage']}}</td>
@@ -24,8 +33,10 @@
                         <td>{{car['Seating']}}</td>
                         <td>${{car['RentalPerDay']}}</td>
                         <td>
-                        <a href="/carinfo/{{car['CarID']}}">Update</a>
-                        <a href="/carinfo/{{car['CarID']}}">Delete</a>
+                          {% if access == "adminaccess" or access == "staffaccess" %}
+                            <a href="/carinfo/{{car['CarID']}}">Update</a>
+                            <a href="/carinfo/{{car['CarID']}}">Delete</a>
+                          {% endif %}
                         </td>
                     </tr>
                 {% endfor %}
