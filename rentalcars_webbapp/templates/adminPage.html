@@ -12,9 +12,8 @@
             <h1>Admin Page</h1>
             <h2>Welcome {{session['username']}}</h2>
             <ul>
-                <li><a href="{{ url_for('home') }}">View Profile</a></li>
-                <li><a href="{{ url_for('home') }}">Update Profile and Password</a></li><br><br>
-
+                <li><a href="{{ url_for('displayProfile') }}">View and Update Profile</a></li>
+                <li><a href="{{ url_for('home') }}">Reset Password</a></li><br><br>
                 
                 <li><a href="/customerlist/{{'adminaccess'}}">View Customers</a></li>
                 <li><a href="/userform/{{'customer'}}">Add Customers</a></li>
@@ -26,10 +25,10 @@
                 <li><a href="{{ url_for('staffList') }}">Update Staff's Profiles</a></li>
                 <li><a href="{{ url_for('staffList') }}">Delete Staff</a></li><br><br>
 
-                <li><a href="{{ url_for('carList') }}">View Rental Cars</a></li>
+                <li><a href="/carlist/{{'adminaccess'}}">View Rental Cars</a></li>
                 <li><a href="{{ url_for('carForm') }}">Add Rental Cars</a></li>
-                <li><a href="{{ url_for('carList') }}">Update Rental Cars' Information</a></li>
-                <li><a href="{{ url_for('carList') }}">Delete Rental Cars</a></li>
+                <li><a href="/carlist/{{'adminaccess'}}">Update Rental Cars' Information</a></li>
+                <li><a href="/carlist/{{'adminaccess'}}">Delete Rental Cars</a></li>
             </ul>
       </nav>
       <section class="content">
