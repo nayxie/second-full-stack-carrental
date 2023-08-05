@@ -408,7 +408,46 @@ def carForm():
 
 @app.route("/addcars", methods=['GET', 'POST'])
 def addCars():
-    return "added"
+    msg = ""
+    if (request.method == 'POST' 
+        and request.form.get('registration') 
+        and request.form.get('model') 
+        and request.form.get('productionyear') 
+        and request.form.get('seating') 
+        and request.form.get('rental')):
+       
+        registration = request.form['registration']
+        model = request.form['model']
+        productionyear = request.form['productionyear']
+        seating = request.form['seating']
+        rental = request.form['rental']
+
+        
+        # Check if account exists using MySQL
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM rental_cars WHERE Registration = %s', (registration,))
+        account = cursor.fetchone()
+        # If account exists show error and validation checks
+        if account:
+            msg = 'Account already exists.'
+        elif not re.match(r'[A-Za-z0-9]+', registration):
+            msg = 'Registration must contain only characters and numbers.'
+        elif not re.match(r'^[A-Za-z0-9\s\-]+$', model):
+            msg = 'Model must contain only characters, numbers, spaces, and hyphens.'
+        
+ 
+        else:
+            # Account doesnt exists and the form data is valid, now insert new account into accounts table
+           
+            cursor.execute('INSERT INTO rental_cars (Registration, CarModel, ProductionYear, Seating, RentalPerDay) \
+                            VALUES (%s, %s, %s, %s, %s);', (registration, model, productionyear, seating, rental,))
+            mysql.connection.commit()
+            msg = f'You have successfully added a car!'
+    elif request.method == 'POST':
+        # Form is empty (no POST data)
+        msg = 'Please fill out the form.'
+    return msg
+
 
 
 @app.route("/carinfo/<carid>")
@@ -416,7 +455,45 @@ def carInfo(carid):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM rental_cars WHERE CarID = %s;', (carid,))
     account = cursor.fetchone()
-    return account
+    return render_template("carInfo.html", account=account)
+
+@app.route("/updatecar", methods=['GET', 'POST'])
+def updateCar():
+    msg = ""
+    if (request.method == 'POST' 
+        and request.form.get('registration') 
+        and request.form.get('model') 
+        and request.form.get('productionyear') 
+        and request.form.get('seating') 
+        and request.form.get('rental')):
+
+        registration = request.form['registration']
+        model = request.form['model']
+        productionyear = request.form['productionyear']
+        seating = request.form['seating']
+        rental = request.form['rental']
+    
+        if not re.match(r'^[A-Za-z0-9\s\-]+$', model):
+            msg = 'Model must contain only characters, numbers, spaces, and hyphens.'
+        else:
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute('UPDATE rental_cars SET CarModel = %s, ProductionYear= %s, Seating= %s, RentalPerDay= %s WHERE Registration = %s;',
+                            (model, productionyear, seating, rental, registration))
+            mysql.connection.commit()
+            msg = 'You have successfully updated a car!'
+    elif request.method == 'POST':
+        # Form is empty (no POST data)
+        msg = 'Please fill out the form.'
+    return msg
+
+@app.route("/deletecar", methods=['GET', 'POST'])
+def deleteCar():
+    carid = request.form['carid']
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('DELETE FROM rental_cars WHERE CarID = %s', (carid,))
+    mysql.connection.commit()
+    msg = 'You have successfully deleted a car!'
+    return msg
 
 
 
