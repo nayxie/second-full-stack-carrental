@@ -395,12 +395,12 @@ def deleteStaff():
 
 
 
-@app.route("/carlist")
-def carList():
+@app.route("/carlist/<access>")
+def carList(access):
     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
     cursor.execute('SELECT * FROM rental_cars')
     account = cursor.fetchall()
-    return render_template("carList.html", account=account)
+    return render_template("carList.html", account=account, access=access)
 
 @app.route("/carform")
 def carForm():
@@ -494,6 +494,17 @@ def deleteCar():
     mysql.connection.commit()
     msg = 'You have successfully deleted a car!'
     return msg
+
+@app.route("/displayprofile")
+def displayProfile():
+    userid = session['id'] 
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM users WHERE UserID = %s;', (userid,))
+    account = cursor.fetchone()
+    return render_template("profile.html", account=account)
+
+
+
 
 
 
