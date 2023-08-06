@@ -29,9 +29,18 @@ app.config['MYSQL_PORT'] = 3306
 # Intialize MySQL
 mysql = MySQL(app)
 
+def isAuthenticated():
+    return 'username' in session
 
-
-
+def getUserRole():
+    if isAuthenticated():
+        if session['userrole'] == 'admin':
+            return 'admin'
+        elif session['userrole'] == 'staff':
+            return 'staff'
+        elif session['userrole'] == 'customer':
+            return 'customer'
+    return None
 
 @app.route("/")
 def home():
@@ -58,7 +67,7 @@ def authenticate():
             if bcrypt.checkpw(userPassword.encode('utf-8'),password.encode('utf-8')):
             # If account exists in accounts table in out database
             # Create session data, we can access this data in other routes
-                session['loggedin'] = True
+                # session['loggedin'] = True
                 session['id'] = account['UserID']
                 session['username'] = account['Username']
                 session['userrole'] = account['UserRole']
@@ -79,6 +88,12 @@ def authenticate():
         msg = 'Please provide both username and password.'
     # Show the login form with message
     return msg
+
+@app.route("/logout")
+def logOut():
+    session.clear()
+    return redirect(url_for("home"))
+
 
 @app.route("/signup")
 def signUp():
@@ -135,65 +150,85 @@ def register():
     return msg
 
 
-
-
-
-
-
-
-def checkRole():
-    if session['loggedin']:
-        if session['userrole'] == 'admin':
-            return 'admin'
-        elif session['userrole'] == 'staff':
-            return 'staff'
-        elif session['userrole'] == 'customer':
-            return 'customer'
-    else:
-        return 'None'
-
-
-
-
-
-
-
+@app.route("/dashboard")
+def dashboard():
+    if session['userrole'] == 'admin':
+        return redirect(url_for('adminPage'))
+    elif session['userrole'] == 'staff':
+        return redirect(url_for('staffPage'))
+    elif session['userrole'] == 'customer':
+        return redirect(url_for('customerPage'))
 
 
 
 @app.route("/adminpage")
 def adminPage():
-    userrole = checkRole()
+    if not isAuthenticated():
+        return redirect(url_for('home'))
+    userrole = getUserRole()
+
     if userrole == 'admin':
         return render_template("adminPage.html")
-    elif userrole == 'None':
-        redirect(url_for("logIn"))
+    elif userrole == None:
+        return redirect(url_for("logIn"))
     else:
         return 'Unauthorised.'
 
 @app.route("/staffpage")
 def staffPage():
-    userrole = checkRole()
+    if not isAuthenticated():
+        return redirect(url_for('home'))
+
+    userrole = getUserRole()
     if userrole == 'staff':
         return render_template("staffPage.html")
-    elif userrole == 'None':
-        redirect(url_for("logIn"))
+    elif userrole == None:
+        return redirect(url_for("logIn"))
     else:
         return 'Unauthorised.'
 
 @app.route("/customerpage")
 def customerPage():
-    userrole = checkRole()
+    if not isAuthenticated():
+        return redirect(url_for('home'))
+
+    userrole = getUserRole()
     if userrole == 'customer':
         return render_template("customerPage.html")
-    elif userrole == 'None':
-        redirect(url_for("logIn"))
+    elif userrole == None:
+        return redirect(url_for("logIn"))
     else:
         return 'Unauthorised.'
 
 
 # access control need to be implemented from this point 
 
+
+@app.route("/passwordform")
+def passwordForm():
+    return render_template("passwordForm.html")
+
+@app.route("/updatepassword", methods=['GET', 'POST'])
+def updatePassword():
+    msg = ""
+    if (request.method == 'POST' 
+        and request.form.get('pw') 
+        and request.form.get('confirmpw')):
+
+        pw = request.form['pw']
+        confirmpw = request.form['confirmpw']
+
+        if pw == confirmpw:
+            hashed = bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt())
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute('UPDATE users SET UserPassword = %s WHERE Username = %s;',(hashed, session['username']))
+            mysql.connection.commit()
+            msg = 'You have successfully updated your password!'
+        else:
+            msg = 'Passwords do not match. Please try again.'
+    else:
+        msg = 'Please fill out the form.'
+    return msg
 
 @app.route("/userform/<userrole>")
 def userForm(userrole):
@@ -504,6 +539,47 @@ def displayProfile():
     return render_template("profile.html", account=account)
 
 
+@app.route("/updateprofile", methods=['GET', 'POST'])
+def updateProfile():
+    msg = ""
+    if (request.method == 'POST' 
+        and request.form.get('username') 
+        and request.form.get('firstname') 
+        and request.form.get('lastname') 
+        and request.form.get('address') 
+        and request.form.get('email')
+        and request.form.get('phone')):
+
+        username = request.form['username']
+        # password = request.form['password']
+        firstname = request.form['firstname']
+        lastname = request.form['lastname']
+        address = request.form['address']
+        email = request.form['email']
+        phone = request.form['phone']
+    
+        if not re.match(r'^[A-Za-z\s]+$', firstname):
+            msg = 'Invalid first name.'
+        elif not re.match(r'^[A-Za-z\s]+$', lastname):
+            msg = 'Invalid last name.'
+        elif not re.match(r'^[A-Za-z0-9\s\-,.#]+$', address):
+            msg = 'Invalid address.'
+        elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
+            msg = 'Invalid email address.'
+        elif not re.match(r'^[\d\s+\-().]+$', phone):
+            msg = 'Invalid phone number.'
+        # elif not username or not password or not userRole or not email:
+        #     msg = 'Please fill out the form.'
+        else:
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute('UPDATE users SET FirstName = %s, LastName= %s, Address= %s, Email= %s, Phone= %s WHERE Username = %s;',
+                            (firstname, lastname, address, email, phone, username))
+            mysql.connection.commit()
+            msg = 'You have successfully updated your profile!'
+    elif request.method == 'POST':
+        # Form is empty (no POST data)
+        msg = 'Please fill out the form.'
+    return msg
 
 
 
