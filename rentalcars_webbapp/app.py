@@ -52,6 +52,7 @@ def logIn():
 
 @app.route("/authenticate", methods=['GET', 'POST'])
 def authenticate():
+    msg = ''
     # Check if "username" and "password" POST requests exist (user submitted form)
     if request.method == 'POST' and request.form.get('username') and request.form.get('password'):
         # Create variables for easy access
@@ -72,12 +73,8 @@ def authenticate():
                 session['username'] = account['Username']
                 session['userrole'] = account['UserRole']
                 # Redirect to dashboard based on user role
-                if session['userrole'] == 'admin':
-                    return redirect(url_for('adminPage'))
-                elif session['userrole'] == 'staff':
-                    return redirect(url_for('staffPage'))
-                elif session['userrole'] == 'customer':
-                    return redirect(url_for('customerPage'))
+                return redirect(url_for('dashboard'))
+            
             else:
                 #password incorrect
                 msg = 'Incorrect password.'
@@ -89,11 +86,22 @@ def authenticate():
     # Show the login form with message
     return msg
 
+@app.route("/dashboard")
+def dashboard():
+    if not isAuthenticated():
+        return redirect(url_for('home'))
+    if session['userrole'] == 'admin':
+        return render_template('adminPage.html')
+    elif session['userrole'] == 'staff':
+        return render_template('staffPage.html')
+    elif session['userrole'] == 'customer':
+        return render_template('customerPage.html')
+    return redirect(url_for("home"))
+
 @app.route("/logout")
 def logOut():
     session.clear()
     return redirect(url_for("home"))
-
 
 @app.route("/signup")
 def signUp():
@@ -118,13 +126,13 @@ def register():
         account = cursor.fetchone()
         # If account exists show error and validation checks
         if account:
-            msg = 'Account already exists.'
+            return 'Account already exists.'
         elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
-            msg = 'Invalid email address.'
+            return 'Invalid email address.'
         elif not re.match(r'[A-Za-z0-9]+', username):
-            msg = 'Username must contain only characters and numbers.'
+            return 'Username must contain only characters and numbers.'
         elif not username or not password or not email:
-            msg = 'Please fill out the form.'
+            return 'Please fill out the form.'
         else:
             # Account doesnt exists and the form data is valid, now insert new account into accounts table
             userRole = 'customer'
@@ -133,84 +141,67 @@ def register():
             cursor.execute('INSERT INTO users (Username, UserPassword, UserRole, Email) \
                             VALUES (%s, %s, %s, %s)', (username, hashed, userRole, email,))
             mysql.connection.commit()
-            msg = 'You have successfully registered!'
-            
-
-
-            # redirect to login page
-
-
-
-
-
+            return 'You have successfully registered!'
     elif request.method == 'POST':
         # Form is empty (no POST data)
-        msg = 'Please fill out the form.'
+        return 'Please fill out the form.'
     # Show registration form with message (if any)
-    return msg
-
-
-@app.route("/dashboard")
-def dashboard():
-    if session['userrole'] == 'admin':
-        return redirect(url_for('adminPage'))
-    elif session['userrole'] == 'staff':
-        return redirect(url_for('staffPage'))
-    elif session['userrole'] == 'customer':
-        return redirect(url_for('customerPage'))
+    return redirect(url_for("signUp"))
 
 
 
-@app.route("/adminpage")
-def adminPage():
-    if not isAuthenticated():
-        return redirect(url_for('home'))
-    userrole = getUserRole()
+# @app.route("/adminpage")
+# def adminPage():
+#     if not isAuthenticated():
+#         return redirect(url_for('home'))
+#     userrole = getUserRole()
 
-    if userrole == 'admin':
-        return render_template("adminPage.html")
-    elif userrole == None:
-        return redirect(url_for("logIn"))
-    else:
-        return 'Unauthorised.'
+#     if userrole == 'admin':
+#         return render_template("adminPage.html")
+#     elif userrole == None:
+#         return redirect(url_for('home'))
+#     else:
+#         return 'Unauthorised.'
 
-@app.route("/staffpage")
-def staffPage():
-    if not isAuthenticated():
-        return redirect(url_for('home'))
+# @app.route("/staffpage")
+# def staffPage():
+#     if not isAuthenticated():
+#         return redirect(url_for('home'))
 
-    userrole = getUserRole()
-    if userrole == 'staff':
-        return render_template("staffPage.html")
-    elif userrole == None:
-        return redirect(url_for("logIn"))
-    else:
-        return 'Unauthorised.'
+#     userrole = getUserRole()
+#     if userrole == 'staff':
+#         return render_template("staffPage.html")
+#     elif userrole == None:
+#         return redirect(url_for('home'))
+#     else:
+#         return 'Unauthorised.'
 
-@app.route("/customerpage")
-def customerPage():
-    if not isAuthenticated():
-        return redirect(url_for('home'))
+# @app.route("/customerpage")
+# def customerPage():
+#     if not isAuthenticated():
+#         return redirect(url_for('home'))
 
-    userrole = getUserRole()
-    if userrole == 'customer':
-        return render_template("customerPage.html")
-    elif userrole == None:
-        return redirect(url_for("logIn"))
-    else:
-        return 'Unauthorised.'
-
-
-# access control need to be implemented from this point 
+#     userrole = getUserRole()
+#     if userrole == 'customer':
+#         return render_template("customerPage.html")
+#     elif userrole == None:
+#         return redirect(url_for('home'))
+#     else:
+#         return 'Unauthorised.'
 
 
 @app.route("/passwordform")
 def passwordForm():
+    if not isAuthenticated():
+        return redirect(url_for('home'))
+
     return render_template("passwordForm.html")
 
 @app.route("/updatepassword", methods=['GET', 'POST'])
 def updatePassword():
-    msg = ""
+    if not isAuthenticated():
+        return redirect(url_for('home'))
+    msg = ''
     if (request.method == 'POST' 
         and request.form.get('pw') 
         and request.form.get('confirmpw')):
@@ -232,133 +223,171 @@ def updatePassword():
 
 @app.route("/userform/<userrole>")
 def userForm(userrole):
-    return render_template("userForm.html", userrole=userrole)
+    if not isAuthenticated():
+        return redirect(url_for('home'))
+
+    user_role = getUserRole()
+    if user_role == 'admin' and userrole in ['customer', 'staff']:
+        return render_template("userForm.html", userrole=userrole)
+    elif user_role == 'admin':
+        return "You can either add a 'customer' or 'staff'."
+    return "Unauthorised."
 
 @app.route("/addusers/<userrole>", methods=['GET', 'POST'])
 def addUsers(userrole):
-    msg = ""
-    if (request.method == 'POST' 
-        and request.form.get('username') 
-        and request.form.get('password') 
-        and request.form.get('firstname') 
-        and request.form.get('lastname') 
-        and request.form.get('address') 
-        and request.form.get('email')
-        and request.form.get('phone')):
-        username = request.form['username']
-        password = request.form['password']
-        firstname = request.form['firstname']
-        lastname = request.form['lastname']
-        address = request.form['address']
-        email = request.form['email']
-        phone = request.form['phone']
+    if not isAuthenticated():
+        return redirect(url_for('home'))
+    user_role = getUserRole()
+    if user_role == 'admin' and userrole in ['customer', 'staff']:
+        if (request.method == 'POST' 
+            and request.form.get('username') 
+            and request.form.get('password') 
+            and request.form.get('firstname') 
+            and request.form.get('lastname') 
+            and request.form.get('address') 
+            and request.form.get('email')
+            and request.form.get('phone')):
+
+            username = request.form['username']
+            password = request.form['password']
+            firstname = request.form['firstname']
+            lastname = request.form['lastname']
+            address = request.form['address']
+            email = request.form['email']
+            phone = request.form['phone']
+            
+            # Check if account exists using MySQL
+            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+            cursor.execute('SELECT * FROM users WHERE Username = %s', (username,))
+            account = cursor.fetchone()
+            # If account exists show error and validation checks
+            if account:
+                msg = 'Account already exists.'
+            elif not re.match(r'[A-Za-z0-9]+', username):
+                msg = 'Username must contain only characters and numbers.'
+            elif not re.match(r'^[A-Za-z\s]+$', firstname):
+                msg = 'Invalid first name.'
+            elif not re.match(r'^[A-Za-z\s]+$', lastname):
+                msg = 'Invalid last name.'
+            elif not re.match(r'^[A-Za-z0-9\s\-,.#]+$', address):
+                msg = 'Invalid address.'
+            elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
+                msg = 'Invalid email address.'
+            elif not re.match(r'^[\d\s+\-().]+$', phone):
+                msg = 'Invalid phone number.'
+            # elif not username or not password or not userRole or not email:
+            #     msg = 'Please fill out the form.'
+            else:
+                # Account doesnt exists and the form data is valid, now insert new account into accounts table
+                hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+                # print(hashed)
+                cursor.execute('INSERT INTO users (Username, UserPassword, UserRole, FirstName, LastName, Address, Email, Phone) \
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (username, hashed, userrole, firstname, lastname, address, email, phone,))
+                mysql.connection.commit()
+                msg = f'You have successfully added a {userrole}!'
         
-        # Check if account exists using MySQL
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM users WHERE Username = %s', (username,))
-        account = cursor.fetchone()
-        # If account exists show error and validation checks
-        if account:
-            msg = 'Account already exists.'
-        elif not re.match(r'[A-Za-z0-9]+', username):
-            msg = 'Username must contain only characters and numbers.'
-        elif not re.match(r'^[A-Za-z\s]+$', firstname):
-            msg = 'Invalid first name.'
-        elif not re.match(r'^[A-Za-z\s]+$', lastname):
-            msg = 'Invalid last name.'
-        elif not re.match(r'^[A-Za-z0-9\s\-,.#]+$', address):
-            msg = 'Invalid address.'
-        elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
-            msg = 'Invalid email address.'
-        elif not re.match(r'^[\d\s+\-().]+$', phone):
-            msg = 'Invalid phone number.'
-        # elif not username or not password or not userRole or not email:
-        #     msg = 'Please fill out the form.'
-        else:
-            # Account doesnt exists and the form data is valid, now insert new account into accounts table
-            hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-            # print(hashed)
-            cursor.execute('INSERT INTO users (Username, UserPassword, UserRole, FirstName, LastName, Address, Email, Phone) \
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (username, hashed, userrole, firstname, lastname, address, email, phone,))
-            mysql.connection.commit()
-            msg = f'You have successfully added a {userrole}!'
-    elif request.method == 'POST':
-        # Form is empty (no POST data)
-        msg = 'Please fill out the form.'
+        elif request.method == 'POST':
+            # Form is empty (no POST data)
+            msg = 'Please fill out the form.'
+    elif user_role == 'admin':
+        msg = "You can either add a 'customer' or 'staff'."
+    msg = 'Unauthorised.'
     return msg
-
-
+    
 @app.route("/customerlist/<access>")
 def customerList(access):
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute('SELECT * FROM users WHERE UserRole = "customer"')
-    account = cursor.fetchall()
-    return render_template("customerList.html", account=account, access=access)
+    if not isAuthenticated():
+        return redirect(url_for('home'))
+    
+    user_role = getUserRole()
+    if user_role in ['admin', 'staff'] and access in ['adminaccess', 'staffaccess']:
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM users WHERE UserRole = "customer"')
+        account = cursor.fetchall()
+        return render_template("customerList.html", account=account, access=access)
+    return 'Unauthorised.'
 
 @app.route("/customerinfo/<username>")
 def customerInfo(username):
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute('SELECT * FROM users WHERE Username = %s', (username,))
-    account = cursor.fetchone()
-    return render_template("customerInfo.html", account=account)
+    if not isAuthenticated():
+        return redirect(url_for('home'))
+    
+    user_role = getUserRole()
+    if user_role == 'admin':
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('SELECT * FROM users WHERE Username = %s', (username,))
+        account = cursor.fetchone()
+        return render_template("customerInfo.html", account=account)
+    return 'Unauthorised.'
+
 
 @app.route("/updatecustomer", methods=['GET', 'POST'])
 def updateCustomer():
-    msg = ""
-    if (request.method == 'POST' 
-        and request.form.get('username') 
-        # and request.form.get('password') 
-        and request.form.get('firstname') 
-        and request.form.get('lastname') 
-        and request.form.get('address') 
-        and request.form.get('email')
-        and request.form.get('phone')):
+    if not isAuthenticated():
+        return redirect(url_for('home'))
+    userrole = getUserRole()
+    if userrole == 'admin':
+        msg = ''
+        if (request.method == 'POST' 
+            and request.form.get('username') 
+            # and request.form.get('password') 
+            and request.form.get('firstname') 
+            and request.form.get('lastname') 
+            and request.form.get('address') 
+            and request.form.get('email')
+            and request.form.get('phone')):
 
-        username = request.form['username']
-        # password = request.form['password']
-        firstname = request.form['firstname']
-        lastname = request.form['lastname']
-        address = request.form['address']
-        email = request.form['email']
-        phone = request.form['phone']
-    
-        if not re.match(r'^[A-Za-z\s]+$', firstname):
-            msg = 'Invalid first name.'
-        elif not re.match(r'^[A-Za-z\s]+$', lastname):
-            msg = 'Invalid last name.'
-        elif not re.match(r'^[A-Za-z0-9\s\-,.#]+$', address):
-            msg = 'Invalid address.'
-        elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
-            msg = 'Invalid email address.'
-        elif not re.match(r'^[\d\s+\-().]+$', phone):
-            msg = 'Invalid phone number.'
-        # elif not username or not password or not userRole or not email:
-        #     msg = 'Please fill out the form.'
-        else:
-            cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-            cursor.execute('UPDATE users SET FirstName = %s, LastName= %s, Address= %s, Email= %s, Phone= %s WHERE Username = %s;',
-                            (firstname, lastname, address, email, phone, username))
-            mysql.connection.commit()
-            msg = 'You have successfully updated a customer!'
-    elif request.method == 'POST':
-        # Form is empty (no POST data)
-        msg = 'Please fill out the form.'
-    return msg
+            username = request.form['username']
+            # password = request.form['password']
+            firstname = request.form['firstname']
+            lastname = request.form['lastname']
+            address = request.form['address']
+            email = request.form['email']
+            phone = request.form['phone']
+        
+            if not re.match(r'^[A-Za-z\s]+$', firstname):
+                msg = 'Invalid first name.'
+            elif not re.match(r'^[A-Za-z\s]+$', lastname):
+                msg = 'Invalid last name.'
+            elif not re.match(r'^[A-Za-z0-9\s\-,.#]+$', address):
+                msg = 'Invalid address.'
+            elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
+                msg = 'Invalid email address.'
+            elif not re.match(r'^[\d\s+\-().]+$', phone):
+                msg = 'Invalid phone number.'
+            # elif not username or not password or not userRole or not email:
+            #     msg = 'Please fill out the form.'
+            else:
+                cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+                cursor.execute('UPDATE users SET FirstName = %s, LastName= %s, Address= %s, Email= %s, Phone= %s WHERE Username = %s;',
+                                (firstname, lastname, address, email, phone, username))
+                mysql.connection.commit()
+                msg = 'You have successfully updated a customer!'
+        elif request.method == 'POST':
+            # Form is empty (no POST data)
+            msg = 'Please fill out the form.'
+        return msg
+    return "Unauthorised."
 
 @app.route("/deletecustomer", methods=['GET', 'POST'])
 def deleteCustomers():
-    username = request.form['username']
-    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute('DELETE FROM users WHERE Username = %s', (username,))
-    mysql.connection.commit()
-    msg = 'You have successfully deleted a customer!'
+    if not isAuthenticated():
+        return redirect(url_for('home'))
+    userrole = getUserRole()
+    if userrole == 'admin':
+        username = request.form['username']
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        cursor.execute('DELETE FROM users WHERE Username = %s', (username,))
+        mysql.connection.commit()
+        msg = 'You have successfully deleted a customer!'
+    msg = "Unauthorised."
     return msg
 
 
 
 
 
-
+# access control from here 
 
 
 
@@ -580,146 +609,4 @@ def updateProfile():
         # Form is empty (no POST data)
         msg = 'Please fill out the form.'
     return msg
-
-
-
-
-
-# @app.route("/userform2")
-# def userForm2():
-#     return render_template("userForm2.html")
-
-# @app.route("/addstaff", methods=['GET', 'POST'])
-# def addStaff():
-#     msg = ""
-#     if (request.method == 'POST' 
-#         and request.form.get('username') 
-#         and request.form.get('password') 
-#         and request.form.get('firstname') 
-#         and request.form.get('lastname') 
-#         and request.form.get('address') 
-#         and request.form.get('email')
-#         and request.form.get('phone')):
-#         username = request.form['username']
-#         password = request.form['password']
-#         firstname = request.form['firstname']
-#         lastname = request.form['lastname']
-#         address = request.form['address']
-#         email = request.form['email']
-#         phone = request.form['phone']
-        
-#         # Check if account exists using MySQL
-#         cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-#         cursor.execute('SELECT * FROM users WHERE Username = %s', (username,))
-#         account = cursor.fetchone()
-#         # If account exists show error and validation checks
-#         if account:
-#             msg = 'Account already exists.'
-#         elif not re.match(r'[A-Za-z0-9]+', username):
-#             msg = 'Username must contain only characters and numbers.'
-#         elif not re.match(r'^[A-Za-z\s]+$', firstname):
-#             msg = 'Invalid first name.'
-#         elif not re.match(r'^[A-Za-z\s]+$', lastname):
-#             msg = 'Invalid last name.'
-#         elif not re.match(r'^[A-Za-z0-9\s\-,.#]+$', address):
-#             msg = 'Invalid address.'
-#         elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
-#             msg = 'Invalid email address.'
-#         elif not re.match(r'^[\d\s+\-().]+$', phone):
-#             msg = 'Invalid phone number.'
-#         # elif not username or not password or not userRole or not email:
-#         #     msg = 'Please fill out the form.'
-#         else:
-#             userrole = "staff"
-#             # Account doesnt exists and the form data is valid, now insert new account into accounts table
-#             hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-#             # print(hashed)
-#             cursor.execute('INSERT INTO users (Username, UserPassword, UserRole, FirstName, LastName, Address, Email, Phone) \
-#                             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (username, hashed, userrole, firstname, lastname, address, email, phone,))
-#             mysql.connection.commit()
-#             msg = 'You have successfully added a staff!'
-#     elif request.method == 'POST':
-#         # Form is empty (no POST data)
-#         msg = 'Please fill out the form.'
-#     return msg
-
-# @app.route("/stafflist")
-# def staffList():
-#     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-#     cursor.execute('SELECT * FROM users WHERE UserRole = "staff"')
-#     account = cursor.fetchall()
-#     return render_template("staffList.html", account=account)
-
-
-
-
-
-# @app.route("/staffinfo/<username>")
-# def staffInfo(username):
-#     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-#     cursor.execute('SELECT * FROM users WHERE Username = %s', (username,))
-#     account = cursor.fetchone()
-#     return render_template("displayStaffInfo.html", account=account)
-
-# @app.route("/updatestaffinfo", methods=['GET', 'POST'])
-# def updateStaffInfo():
-#     msg = ""
-#     if (request.method == 'POST' 
-#         and request.form.get('username') 
-#         # and request.form.get('password') 
-#         and request.form.get('firstname') 
-#         and request.form.get('lastname') 
-#         and request.form.get('address') 
-#         and request.form.get('email')
-#         and request.form.get('phone')):
-
-#         username = request.form['username']
-#         # password = request.form['password']
-#         firstname = request.form['firstname']
-#         lastname = request.form['lastname']
-#         address = request.form['address']
-#         email = request.form['email']
-#         phone = request.form['phone']
-    
-#         if not re.match(r'^[A-Za-z\s]+$', firstname):
-#             msg = 'Invalid first name.'
-#         elif not re.match(r'^[A-Za-z\s]+$', lastname):
-#             msg = 'Invalid last name.'
-#         elif not re.match(r'^[A-Za-z0-9\s\-,.#]+$', address):
-#             msg = 'Invalid address.'
-#         elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
-#             msg = 'Invalid email address.'
-#         elif not re.match(r'^[\d\s+\-().]+$', phone):
-#             msg = 'Invalid phone number.'
-#         # elif not username or not password or not userRole or not email:
-#         #     msg = 'Please fill out the form.'
-#         else:
-#             cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-#             cursor.execute('UPDATE users SET FirstName = %s, LastName= %s, Address= %s, Email= %s, Phone= %s WHERE Username = %s;',
-#                             (firstname, lastname, address, email, phone, username))
-#             mysql.connection.commit()
-#             msg = 'You have successfully updated a staff!'
-#     elif request.method == 'POST':
-#         # Form is empty (no POST data)
-#         msg = 'Please fill out the form.'
-#     return msg
-
-# @app.route("/stafflist2")
-# def staffList2():
-#     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-#     cursor.execute('SELECT * FROM users WHERE UserRole = "staff"')
-#     account = cursor.fetchall()
-#     return render_template("staffList2.html", account=account)
-
-# @app.route("/deletestaff/<username>")
-# def deleteStaff(username):
-#     cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-#     cursor.execute('DELETE FROM users WHERE Username = %s', (username,))
-#     mysql.connection.commit()
-#     msg = 'You have successfully deleted a staff!'
-#     return msg
-
-
-
-
 
