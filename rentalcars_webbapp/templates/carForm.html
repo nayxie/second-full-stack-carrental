@@ -12,7 +12,7 @@
 
 <h2>Add A Car</h2>
 
-<form action="/addcars" method="post">
+<form action="/addcars" method="post" enctype="multipart/form-data">
     <label for="registration">Registration Number:</label>
     <input type="text" name="registration"><br>
     <label for="model">Model:</label>
@@ -28,7 +28,7 @@
     <input type="number" name="rental" min="40" max="200" step="0.01"><br>
 
     <label for="image">Upload An Image:</label>
-    <input type="text" name="image"><br>
+    <input type="file" name="image"><br>
 
     <input type="submit" value="Submit">
 </form>
