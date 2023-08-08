@@ -26,7 +26,13 @@
                 </tr>
                 {% for car in account %}
                     <tr>
-                        <td>{{car['CarImage']}}</td>
+                        <td>
+                          {% if car['CarImagePath'] %}
+                              <img src="{{ url_for('static', filename='carImg/' + car['CarImagePath']) }}" alt="Car Image">
+                          {% else %}
+                              <p>No image available</p>
+                          {% endif %} 
+                        </td>
                         <td>{{car['Registration']}}</td>
                         <td>{{car['CarModel']}}</td>
                         <td>{{car['ProductionYear']}}</td>
