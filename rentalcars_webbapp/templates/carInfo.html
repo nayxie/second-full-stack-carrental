@@ -28,8 +28,8 @@
               <label for="rental">Rental Per Day: $</label>
               <input type="number" name="rental" value="{{ account['RentalPerDay'] }}"  min="40" max="200" step="0.01"><br>
       
-              <label for="image">Upload An Image:</label>
-              <input type="text" name="image" value="{{ account['Image'] }}"><br>
+              <label for="image">Image:</label>
+              <input type="text" name="image" value="{{ account['CarImagePath'] }}" readonly><br>
 
               <input type="submit" value="Update">
           </form>
