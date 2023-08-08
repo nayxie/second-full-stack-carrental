@@ -13,17 +13,17 @@
             <h2>Welcome {{session['username']}}</h2>
             <ul>
                 <li><a href="{{ url_for('displayProfile') }}">View and Update Profile</a></li>
-                <li><a href="{{ url_for('passwordForm') }}">Reset Password</a></li><br><br>
+                <li><a href="{{ url_for('passwordForm') }}">Reset Password</a></li><br>
                 
                 <li><a href="/customerlist/{{'adminaccess'}}">View Customers</a></li>
                 <li><a href="/userform/{{'customer'}}">Add Customers</a></li>
                 <li><a href="/customerlist/{{'adminaccess'}}">Update Customers' Profiles</a></li>
-                <li><a href="/customerlist/{{'adminaccess'}}">Delete Customers</a></li><br><br>
+                <li><a href="/customerlist/{{'adminaccess'}}">Delete Customers</a></li><br>
 
                 <li><a href="{{ url_for('staffList') }}">View Staff</a></li>
                 <li><a href="/userform/{{'staff'}}">Add Staff</a></li>
                 <li><a href="{{ url_for('staffList') }}">Update Staff's Profiles</a></li>
-                <li><a href="{{ url_for('staffList') }}">Delete Staff</a></li><br><br>
+                <li><a href="{{ url_for('staffList') }}">Delete Staff</a></li><br>
 
                 <li><a href="/carlist/{{'adminaccess'}}">View Rental Cars</a></li>
                 <li><a href="{{ url_for('carForm') }}">Add Rental Cars</a></li>
