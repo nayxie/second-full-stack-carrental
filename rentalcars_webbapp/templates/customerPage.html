@@ -9,13 +9,13 @@
     </head>
     <body>
       <nav>
-            <h1>Customer Page</h1>
+            <h1 class="text-info">Customer Page</h1>
             <h2>Welcome {{session['username']}}</h2>
-            <ul>
-                <li><a href="{{ url_for('displayProfile') }}">View and Update Profile</a></li>
-                <li><a href="{{ url_for('passwordForm') }}">Reset Password</a></li><br><br>
+            <ul class="list-group">
+                <li class="list-group-item"><a href="{{ url_for('displayProfile') }}" class="text-primary">View and Update Profile</a></li>
+                <li class="list-group-item"><a href="{{ url_for('passwordForm') }}" class="text-primary">Reset Password</a></li><br>
               
-                <li><a href="/carlist/{{'customeraccess'}}">View Rental Cars</a></li>
+                <li class="list-group-item"><a href="/carlist/{{'customeraccess'}}" class="text-primary">View Rental Cars</a></li>
             </ul>
             <button onclick="logout()">Log Out</button>
       </nav>
