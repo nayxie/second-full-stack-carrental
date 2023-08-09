@@ -9,26 +9,26 @@
     </head>
     <body>
       <nav>
-            <h1>Admin Page</h1>
+            <h1 class="text-info">Admin Page</h1>
             <h2>Welcome {{session['username']}}</h2>
-            <ul>
-                <li><a href="{{ url_for('displayProfile') }}">View and Update Profile</a></li>
-                <li><a href="{{ url_for('passwordForm') }}">Reset Password</a></li><br>
+            <ul class="list-group">
+                <li class="list-group-item"><a href="{{ url_for('displayProfile') }}" class="text-primary">View and Update Profile</a></li>
+                <li class="list-group-item"><a href="{{ url_for('passwordForm') }}" class="text-primary">Reset Password</a></li><br>
                 
-                <li><a href="/customerlist/{{'adminaccess'}}">View Customers</a></li>
-                <li><a href="/userform/{{'customer'}}">Add Customers</a></li>
-                <li><a href="/customerlist/{{'adminaccess'}}">Update Customers' Profiles</a></li>
-                <li><a href="/customerlist/{{'adminaccess'}}">Delete Customers</a></li><br>
+                <li class="list-group-item"><a href="/customerlist/{{'adminaccess'}}" class="text-primary">View Customers</a></li>
+                <li class="list-group-item"><a href="/userform/{{'customer'}}" class="text-primary">Add Customers</a></li>
+                <li class="list-group-item"><a href="/customerlist/{{'adminaccess'}}" class="text-primary">Update Customers' Profiles</a></li>
+                <li class="list-group-item"><a href="/customerlist/{{'adminaccess'}}" class="text-primary">Delete Customers</a></li><br>
 
-                <li><a href="{{ url_for('staffList') }}">View Staff</a></li>
-                <li><a href="/userform/{{'staff'}}">Add Staff</a></li>
-                <li><a href="{{ url_for('staffList') }}">Update Staff's Profiles</a></li>
-                <li><a href="{{ url_for('staffList') }}">Delete Staff</a></li><br>
+                <li class="list-group-item"><a href="{{ url_for('staffList') }}" class="text-primary">View Staff</a></li>
+                <li class="list-group-item"><a href="/userform/{{'staff'}}" class="text-primary">Add Staff</a></li>
+                <li class="list-group-item"><a href="{{ url_for('staffList') }}" class="text-primary">Update Staff's Profiles</a></li>
+                <li class="list-group-item"><a href="{{ url_for('staffList') }}" class="text-primary">Delete Staff</a></li><br>
 
-                <li><a href="/carlist/{{'adminaccess'}}">View Rental Cars</a></li>
-                <li><a href="{{ url_for('carForm') }}">Add Rental Cars</a></li>
-                <li><a href="/carlist/{{'adminaccess'}}">Update Rental Cars' Information</a></li>
-                <li><a href="/carlist/{{'adminaccess'}}">Delete Rental Cars</a></li>
+                <li class="list-group-item"><a href="/carlist/{{'adminaccess'}}" class="text-primary">View Rental Cars</a></li>
+                <li class="list-group-item"><a href="{{ url_for('carForm') }}" class="text-primary">Add Rental Cars</a></li>
+                <li class="list-group-item"><a href="/carlist/{{'adminaccess'}}" class="text-primary">Update Rental Cars' Information</a></li>
+                <li class="list-group-item"><a href="/carlist/{{'adminaccess'}}" class="text-primary">Delete Rental Cars</a></li>
             </ul>
             <button onclick="logout()">Log Out</button>
 
