@@ -16,14 +16,16 @@
             {% endif %}
             
 
-            <table>
+            <table class="table">
+              <thread>
                 <tr>
                   <th>Photo</th><th>Registration Number</th><th>Model</th><th>Production Year</th><th>Seating</th><th>Rental Per Day</th>
                   {% if access == "adminaccess" or access == "staffaccess" %}
                   <th>Actions</th>
                   {% endif %}
-                
                 </tr>
+              </thread>
+              <tbody>
                 {% for car in account %}
                     <tr>
                         <td>
@@ -46,6 +48,7 @@
                         </td>
                     </tr>
                 {% endfor %}
+              </tbody>
             </table>
             
       </nav>
