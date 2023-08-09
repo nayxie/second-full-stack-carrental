@@ -9,18 +9,18 @@
     </head>
     <body>
       <nav>
-            <h1>Staff Page</h1>
+            <h1 class="text-info">Staff Page</h1>
             <h2>Welcome {{session['username']}}</h2>
-            <ul>
-                <li><a href="{{ url_for('displayProfile') }}">View and Update Profile</a></li>
-                <li><a href="{{ url_for('passwordForm') }}">Reset Password</a></li><br><br>
+            <ul class="list-group">
+                <li class="list-group-item"><a href="{{ url_for('displayProfile') }}" class="text-primary">View and Update Profile</a></li>
+                <li class="list-group-item"><a href="{{ url_for('passwordForm') }}" class="text-primary">Reset Password</a></li><br>
               
-                <li><a href="/customerlist/{{'staffaccess'}}">View Customers' Profiles</a></li><br><br>
+                <li class="list-group-item"><a href="/customerlist/{{'staffaccess'}}" class="text-primary">View Customers' Profiles</a></li><br>
 
-                <li><a href="/carlist/{{'staffaccess'}}">View Rental Cars</a></li>
-                <li><a href="{{ url_for('carForm') }}">Add Rental Cars</a></li>
-                <li><a href="/carlist/{{'staffaccess'}}">Update Rental Cars' Information</a></li>
-                <li><a href="/carlist/{{'staffaccess'}}">Delete Rental Cars</a></li>
+                <li class="list-group-item"><a href="/carlist/{{'staffaccess'}}" class="text-primary">View Rental Cars</a></li>
+                <li class="list-group-item"><a href="{{ url_for('carForm') }}" class="text-primary">Add Rental Cars</a></li>
+                <li class="list-group-item"><a href="/carlist/{{'staffaccess'}}" class="text-primary">Update Rental Cars' Information</a></li>
+                <li class="list-group-item"><a href="/carlist/{{'staffaccess'}}" class="text-primary">Delete Rental Cars</a></li>
             </ul>
             <button onclick="logout()">Log Out</button>
 
