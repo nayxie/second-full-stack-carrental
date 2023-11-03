@@ -16,6 +16,6 @@ username: cuirongli; password: 123456; role: customer
 
 
 
-:smile:Thank you for taking your time and checking out my system.
+:smile:Thank you for taking your time and checking out my development.
 
 
